@@ -1,0 +1,148 @@
+---
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: "IRQ Balancer API"
+schemes:
+  - http
+basePath: /irq/v1
+produces:
+  - application/json
+consumes:
+  - application/json
+
+paths:
+  /irqDetails:
+    get:
+      tags:
+      - "irq"
+      description: "Gets `IRQDetails` object.\n"
+      operationId: "app.get_irq_details"
+      parameters:
+        - name: begin_date
+          in: query
+          description: "Begin Date RFC#3339 Format ie. 1996-12-19T16:39:57-08:00"
+          required: true
+          type: string
+          format: dateTime
+        - name: end_date
+          in: query
+          description: "End Date ie. 1996-12-19T16:39:57-08:00"
+          required: true
+          type: string
+          format: dateTime
+        - name: path
+          in: query
+          description: "path where /proc/interrupts can be found"
+          required: false
+          type: string
+
+      responses:
+        200:
+          description: "Successful Response"
+          schema:
+            type: object
+            properties:
+              irq_details:
+                $ref: "#/definitions/IRQDetails"
+
+  /irqSetAffinity/{irq_num}/{cpu_num}:
+    put:
+      tags:
+      - "irq"
+      description: "Sets the CPU affinity for a specific IRQ.\n"
+      operationId: "app.put_irq_set_affinity"
+      parameters:
+        - name: irq_num
+          in: path
+          description: The IRQ Channel
+          required: true
+          type: integer
+        - name: cpu_num
+          in: path
+          description: "The CPU to set the IRQ affinity to.\n"
+          required: true
+          type: integer
+
+      responses:
+        200:
+          description: "Successful Response"
+          schema:
+            type: string
+        400:
+          description: "Bad Request."
+          schema:
+            type: string
+
+  /irqBalance:
+    get:
+      tags:
+      - "irq"
+      description: "Gets `IRQBalanceDetails`"
+      operationId: "app.get_irq_balance_details"
+      parameters: []
+      responses:
+        200:
+          description: "Successful Response"
+          schema:
+            type: object
+            properties:
+              irq_balance_details:
+                $ref: "#/definitions/IRQBalance"
+
+definitions:
+  IRQDetails:
+    properties:
+      irq_cpu_percent_distribution:
+        type: array
+        items:
+          type: number
+      irq_cpu_count_distribution:
+        type: array
+        items:
+          type: integer
+      irq_distribution_metric:
+        type: number
+      irq_stats:
+        type: array
+        items:
+          $ref: "#/definitions/IRQStat"
+
+  IRQStat:
+    properties:
+      irq_num:
+        type: integer
+      irq_type:
+        type: string
+      irq_device:
+        type: string
+      irq_cpu_interrupts:
+        type: array
+        items:
+          type: integer
+          title: "Interrupts"
+      irq_cpu_interrupt_total:
+        type: integer
+
+  IRQBalance:
+    properties:
+      irq_balance_algo:
+        type: string
+      irq_final_distribution_metric:
+        type: number
+      irq_final_cpu_distribution:
+        type: array
+        items:
+          type: integer
+      irq_final_cpu_count_distribution:
+        type: array
+        items:
+          type: integer
+      irq_final_stats:
+        type: array
+        items:
+          $ref: "#/definitions/IRQStat"
+      irq_balance_instructions:
+        type: array
+        items:
+          type: string
